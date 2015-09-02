@@ -1,0 +1,98 @@
+﻿#yr-varsel {
+	margin: 8px 0 8px 0 !important;
+	padding: 0 0 8px 0 !important;
+	width: 500px !important;	
+	border-bottom: 4px solid #63c6e3;
+	}
+#yr-varsel * {
+	font-family: Arial, Helvetica, sans-serif !important;
+	}
+#yr-varsel a {
+	color: #069 !important;
+	text-decoration: underline !important;
+	}	
+#yr-varsel a :hover{
+	border: 0 !important;
+	text-decoration: underline;
+	}	
+#yr-varsel a :hover img {
+	text-decoration: none;
+	}	
+#yr-varsel h1 {	
+	padding: 0 !important;
+	margin: 0 0 4px 0 !important;
+	height: 25px !important;
+	width: 500px !important;
+	font-size: 1px !important;
+	}
+#yr-varsel h2 {	
+	font-size: 24px !important;
+	padding: 0 !important;
+	margin: 16px 0 8px 0 !important;
+	}
+#yr-varsel h2 a {	
+	text-decoration: none !important;
+	color: black !important;
+	}
+#yr-varsel h2 a :hover {	
+	text-decoration: underline !important;
+	color: #069 !important;
+	}
+	#yr-varsel p {
+	font-size: 12px !important;
+	padding: 4px 0 4px 0 !important;
+	margin: 4px 4px 0 0 !important;
+	letter-spacing: normal !important;
+	line-height: 18px;
+	}
+#yr-varsel img {		
+	border: 0 !important;
+	}
+#yr-varsel p.yr-lenker {
+	font-weight: bold !important;
+	margin-bottom: 16px !important;
+	}	
+#yr-varsel .yr-lenker a {
+	margin-left: 8px !important;
+	}
+#yr-varsel table {
+	width: 500px !important;
+	font-size: 12px !important;
+	margin: 0 !important;
+	}
+#yr-varsel th {
+	text-align: left !important;
+	padding: 4px 4px 4px 0 !important;
+	margin: 0 !important;
+	}	
+#yr-varsel thead th {
+	text-align: right !important;
+	}
+#yr-varsel td {	
+	padding: 4px 8px 4px 0 !important;
+	margin: 0 !important;
+	text-align: right !important;
+	vertical-align: middle !important;
+	}
+#yr-varsel td.v, #yr-varsel th.v {	
+	text-align: left !important;
+	}	
+#yr-varsel th strong {	
+	color: #069 !important;
+	}
+#yr-varsel td.pluss {
+	color: #c00 !important;
+	font-weight: bold !important;
+	font-size: 14px !important;
+	}
+#yr-varsel td.minus {		
+	color: #069 !important;
+	font-weight: bold !important;
+	font-size: 14px !important;
+	}
+#yr-varsel td.skilje {
+	height: 1px !important;
+	padding: 0 !important;
+	overflow: hidden !important;
+	background: #63c6e3 !important;
+	}
