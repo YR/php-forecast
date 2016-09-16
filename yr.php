@@ -11,6 +11,8 @@
  For feedback / bug repports / feature requests, please contact us: http://om.yr.no/sporsmal/kontakt-yr-no
 
  ###### Changelog
+ Version 3.1 - Sigbjørn Trageton (sigbjorn.trageton@nrk.no) /NRK 2016.09.16
+ * PHP 7 compatible
 
  Version: 3.0 - Marius Undrum (marius.undrum@nrk.no) / NRK 2015.09.02
  * Changed encoding from ISO-8859-1 to UTF-8
