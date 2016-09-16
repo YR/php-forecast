@@ -143,14 +143,14 @@ else {
 }
 
 //Opprett en komunikasjon med yr
-$yr_xmlparse = &new YRComms();
+$yr_xmlparse = new YRComms();
 //Opprett en presentasjon
-$yr_xmldisplay = &new YRDisplay();
+$yr_xmldisplay = new YRDisplay();
 
 $yr_try_curl=true;
 
 //Gjenomfør oppdraget basta bom.
-die($yr_xmldisplay->generateHTMLCached($yr_url, $yr_name, $yr_xmlparse, $yr_url, $yr_try_curl, $yr_use_header, $yr_use_footer, $yr_use_banner, $yr_use_text, $yr_use_links, $yr_use_table, $yr_maxage, $yr_timeout, $yr_link_target));
+die($yr_xmldisplay->generateHTMLCached($yr_url, $yr_name, $yr_xmlparse, $yr_try_curl, $yr_use_header, $yr_use_footer, $yr_use_banner, $yr_use_text, $yr_use_links, $yr_use_table, $yr_maxage, $yr_timeout, $yr_link_target));
 
 
 ///  ///  ///  ///  ///  ///  ///  ///  ///  ///  ///  ///  ///  ///  ///  /
@@ -692,9 +692,10 @@ EOT
 
 
 	//Main with caching
-	public function generateHTMLCached($url,$name,$xml, $url, $try_curl, $useHtmlHeader=true, $useHtmlFooter=true, $useBanner=true, $useText=true, $useLinks=true, $useTable=true, $maxage=0, $timeout=10, $urlTarget='_top'){
+	public function generateHTMLCached($url,$name,$xml, $try_curl, $useHtmlHeader=true, $useHtmlFooter=true, $useBanner=true, $useText=true, $useLinks=true, $useTable=true, $maxage=0, $timeout=10, $urlTarget='_top'){
 		//Default to the name in the url
-		if(null==$name||''==trim($name))$name=array_pop((explode('/',$url)));
+		$url_explode = explode('/',$url);
+		if(null == $name || '' == trim($name)) $name=array_pop($url_explode);
 		$this->handleDataDir(false,htmlentities("$name.$useHtmlHeader.$useHtmlFooter.$useBanner.$useText.$useLinks.$useTable.$maxage.$timeout.$urlTarget"));
 		$yr_cached = $this->datapath;
 		// Clean name
