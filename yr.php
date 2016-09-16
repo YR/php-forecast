@@ -11,8 +11,6 @@
  For feedback / bug repports / feature requests, please contact us: http://om.yr.no/sporsmal/kontakt-yr-no
 
  ###### Changelog
- Version 3.1 - Sigbjørn Trageton (sigbjorn.trageton@nrk.no) /NRK 2016.09.16
- * PHP 7 compatible
 
  Version 3.1 - Andreas Røste (andreas200@live.no) 2016.08.15 16.45
  * Fixed multiple declaretions in generateHTMLCached.
