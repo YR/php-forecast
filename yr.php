@@ -58,7 +58,7 @@
 
 // 1. Lenke: Lenke til stedet på yr.no (Uten siste skråstrek. Bruk vanlig æøå i lenka )
 //    Link: Link to the url for the location on yr.no (Without the last Slash.)
-$yr_url='http://www.yr.no/sted/Norge/Buskerud/Ringerike/Hønefoss';
+$yr_url='https://www.yr.no/sted/Norge/Buskerud/Ringerike/Hønefoss';
 
 // 2. Stedsnavnet: Skriv inn navnet på stedet. La stå tom for å falle tilbake til navnet i lenken
 //    Location: The name of the location. Leave empty to fallback to the location in the url.
@@ -453,7 +453,7 @@ class YRDisplay{
         'vest', 'vest-nordvest','nordvest', 'nord-nordvest', 'nord');
 
     // Hvor hentes bilder til symboler fra?
-    var $yr_imgpath='http://www.yr.no/grafikk/sym/b38';
+    var $yr_imgpath='https://www.yr.no/grafikk/sym/b38';
 
 
     //Generer header for varselet
@@ -521,7 +521,7 @@ EOT
          */
         $this->ht.=<<<EOT
       <h2><a href="$url" target="$target">V&aelig;rvarsel for $this->yr_name</a></h2>
-      <p><a href="http://www.yr.no/" target="$target"><strong>V&aelig;rvarsel fra yr.no, levert av Meteorologisk institutt og NRK.</strong></a></p>
+      <p><a href="https://www.yr.no/" target="$target"><strong>V&aelig;rvarsel fra yr.no, levert av Meteorologisk institutt og NRK.</strong></a></p>
 
 EOT
         ;
