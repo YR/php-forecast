@@ -503,7 +503,7 @@ EOT
     public function getBanner($target='_top'){
         $url=YRComms::convertEncodingEntities($this->yr_url);
         $this->ht.=<<<EOT
-      <h1><a href="http://www.yr.no/" target="$target"><img src="http://fil.nrk.no/yr/grafikk/php-varsel/topp.png" alt="yr.no" title="yr.no er en tjeneste fra Meteorologisk institutt og NRK" /></a></h1>
+      <h1><a href="https://www.yr.no/" target="$target"><img src="https://www.yr.no/grafikk/sym/php-varsel/topp.png" alt="yr.no" title="yr.no er en tjeneste fra Meteorologisk institutt og NRK" /></a></h1>
 
 EOT
         ;
