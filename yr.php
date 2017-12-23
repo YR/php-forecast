@@ -62,7 +62,7 @@ $yr_url='https://www.yr.no/sted/Norge/Buskerud/Ringerike/Hønefoss';
 
 // 2. Stedsnavnet: Skriv inn navnet på stedet. La stå tom for å falle tilbake til navnet i lenken
 //    Location: The name of the location. Leave empty to fallback to the location in the url.
-$yr_name='Hønefoss';
+$yr_name='';
 
 // 3. Bruk header og footer: Velg om du vil ha med header og/eller  footer
 //    Use Header and footers: Select to have HTML headers/footers wrapping the content (useful for debugging)
@@ -74,7 +74,7 @@ $yr_use_header=$yr_use_footer=true;
 // 4. Deler: Velg delene av varselet du vil ta med!
 //    Parts: Choose which parts of the forecast to include
 $yr_use_banner=true; //yr.no Banner
-$yr_use_text=false;   //Tekstvarsel
+$yr_use_text=true;   //Tekstvarsel
 $yr_use_links=true;  //Lenker til varsel på yr.no
 $yr_use_table=true;  //Tabellen med varselet
 
@@ -301,11 +301,11 @@ EOT
         //return $in;
         if(is_array($in))return $in;
         if(null==$in)return null;
-        return htmlentities(strip_tags($in));
+        return htmlentities(strip_tags($in,'<strong>'  ),ENT_NOQUOTES,"ISO-8859-15"); // lagt <strong> som unntak i strip_tags() . Default character set htmlentities()  er nå UTF-8 Dette returnerer nullstreng ved æ-ø-å i teksten.
     }
 
     // Rense tekst data (av sikkerhetshensyn)
-    public function reviveSafeTags($in){
+    public static function reviveSafeTags($in){
         //$in=$in.'<strong>STRONG</strong> <u>UNDERLINE</u> <b>BOLD</b> <i>ITALICS</i>';
         return str_ireplace(array('&lt;strong&gt;','&lt;/strong&gt;','&lt;u&gt;','&lt;/u&gt;','&lt;b&gt;','&lt;/b&gt;','&lt;i&gt;','&lt;/i&gt;'),array('<strong>','</strong>','<u>','</u>','<b>','</b>','<i>','</i>'),$in);
     }
@@ -453,7 +453,7 @@ class YRDisplay{
         'vest', 'vest-nordvest','nordvest', 'nord-nordvest', 'nord');
 
     // Hvor hentes bilder til symboler fra?
-    var $yr_imgpath='https://www.yr.no/grafikk/sym/b38';
+    var $yr_imgpath='https://www.yr.no/grafikk/sym/v2017/png/38';   // endret til ny katalog med månesynboler for natt
 
 
     //Generer header for varselet
@@ -461,8 +461,8 @@ class YRDisplay{
         // Her kan du endre header til hva du vil. NB! Husk å skru det på, ved å endre instillingene i toppen av dokumentet
         if($use_full_html){
             $this->ht.=<<<EOT
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="https://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>V&aelig;rvarsel fra yr.no</title>
@@ -533,17 +533,21 @@ EOT
         if((isset($this->yr_data['TEXT'])) && (isset($this->yr_data['TEXT'][0]['LOCATION']))&& (isset($this->yr_data['TEXT'][0]['LOCATION'][0]['ATTRIBUTES'])) ){
             $yr_place=$this->yr_data['TEXT'][0]['LOCATION'][0]['ATTRIBUTES']['NAME'];
             if(!isset($this->yr_data['TEXT'][0]['LOCATION'][0]['TIME']))return;
+            $old = '';
             foreach($this->yr_data['TEXT'][0]['LOCATION'][0]['TIME'] as $yr_var2){
                 // Små bokstaver
-                $l=(YRComms::convertEncodingUTF($yr_var2['TITLE'][0]['VALUE']));
+                $l=ucfirst((YRComms::convertEncodingUTF($yr_var2['TITLE'][0]['VALUE']))); 	// Stor forbokstav i ukedagsnavnet		
+                if($l <> $old) {                                                            // Tekstvarsel kommer ofte dobbelt opp i xml fil. 
+                $old =  $l ;                                                                // Her fjerner vi duplikatene.
                 // Rettet encoding
                 $e=YRComms::reviveSafeTags(YRComms::convertEncodingUTF($yr_var2['BODY'][0]['VALUE']));
                 // Spytt ut!
                 $this->ht.=<<<EOT
-      <p><strong>$yr_place $l</strong>:$e</p>
+                <p><strong>$l</strong>:$e</p>   <!-- // Fjernet stedsnavn. Ikke relevant da områdene melding gjelder for er beskrevet i meldingsteksten. -->
 
 EOT
                 ;
+               }
             }
         }
     }
@@ -557,7 +561,6 @@ EOT
       <p class="yr-lenker">$this->yr_name p&aring; yr.no:
         <a href="$url/" target="$target">Varsel med kart</a>
         <a href="$url/time_for_time.html" target="$target">Time for time</a>
-        <a href="$url/helg.html" target="$target">Helg</a>
         <a href="$url/langtidsvarsel.html" target="$target">Langtidsvarsel</a>
       </p>
 
@@ -576,6 +579,7 @@ EOT
             <th>Nedb&oslash;r</th>
             <th>Temp.</th>
             <th class="v">Vind</th>
+            <th></th>                  <!-- // plassholder for tom vindpilheader  -->
             <th>Vindstyrke</th>
           </tr>
         </thead>
@@ -601,29 +605,35 @@ EOT
             if($fromdate!=$thisdate){
                 $divider=<<<EOT
           <tr>
-            <td colspan="7" class="skilje"></td>
+            <td colspan="8" class="skilje"></td>
           </tr>
 
 EOT
                 ;
                 list($thisyear, $thismonth, $thisdate)=explode('-', $fromdate);
                 $displaydate=$thisdate.".".$thismonth.".".$thisyear;
-                $firstcellcont=$displaydate;
+                // ukedag i tabell
+                $jd=gregoriantojd($thismonth,$thisdate,$thisyear);
+                $ukedagnummer= jddayofweek($jd,0);
+                if ($ukedagnummer == "0") {$ukedag = "S&oslash;ndag";}
+				    elseif ($ukedagnummer == "1") {$ukedag = "Mandag";}
+				    elseif ($ukedagnummer == "2") {$ukedag = "Tirsdag";}
+				    elseif ($ukedagnummer == "3") {$ukedag = "Onsdag";}                        
+				    elseif ($ukedagnummer == "4") {$ukedag = "Torsdag";}
+				    elseif ($ukedagnummer == "5") {$ukedag = "Fredag";}
+				    elseif ($ukedagnummer == "6") {$ukedag = "L&oslash;rdag";}
+                else {$ukedag = "";}                
+				$firstcellcont=implode("<br>",array($ukedag,$displaydate)); 
                 $thisdate=$fromdate;
                 ++$dayctr;
             }else $divider=$firstcellcont='';
 
             // Vis ny dato
-            if($dayctr<7){
+            if($dayctr<11){       // flere dager i varselet
                 $this->ht.=$divider;
                 // Behandle symbol
-                $imgno=$yr_var3['SYMBOL'][0]['ATTRIBUTES']['NUMBER'];
-                if($imgno<10)$imgno='0'.$imgno;
-                switch($imgno){
-                    case '01': case '02': case '03': case '05': case '06': case '07': case '08':
-                    $imgno.="d"; $do_daynight=1; break;
-                    default: $do_daynight=0;
-                }
+                $imgno=$yr_var3['SYMBOL'][0]['ATTRIBUTES']['VAR'];   // bruk symboler med måne om natten
+
                 // Behandle regn
                 $rain=$yr_var3['PRECIPITATION'][0]['ATTRIBUTES']['VALUE'];
                 if($rain==0.0)$rain="0";
@@ -638,7 +648,7 @@ EOT
                 $winddirtext=$this->yr_vindrettninger[$winddir];
                 // Behandle temperatur
                 $temper=round($yr_var3['TEMPERATURE'][0]['ATTRIBUTES']['VALUE']);
-                if($temper>=0)$tempclass='pluss';
+                if($temper>=1)$tempclass='pluss';   // foretrekker null grader som blå tekst
                 else $tempclass='minus';
 
                 // Rund av vindhastighet
@@ -646,6 +656,134 @@ EOT
                 // Så legger vi ut hele den ferdige linjen
                 $s=$yr_var3['SYMBOL'][0]['ATTRIBUTES']['NAME'];
                 $w=$yr_var3['WINDSPEED'][0]['ATTRIBUTES']['NAME'];
+
+				// Ny seksjon for vindpiler.
+				// Rund av vindretning til nærmeste null eller fem grader. Retningsdelen av filnavnet.
+				$vindretning = round($yr_var3['WINDDIRECTION'][0]['ATTRIBUTES']['DEG']);
+				$sistetall = substr($vindretning, - 1, 1);
+				if ($sistetall == "0")
+				{
+					$modvindretning = $vindretning;
+				}
+				elseif ($sistetall == "1")
+				{
+					$modvindretning = $vindretning - "1";
+				}
+				elseif ($sistetall == "2")
+				{
+					$modvindretning = $vindretning - "2";
+				}
+				elseif ($sistetall == "3")
+				{
+					$modvindretning = $vindretning + "2";
+				}
+				elseif ($sistetall == "4")
+				{
+					$modvindretning = $vindretning + "1";
+				}
+				elseif ($sistetall == "5")
+				{
+					$modvindretning = $vindretning;
+				}
+				elseif ($sistetall == "6")
+				{
+					$modvindretning = $vindretning - "1";
+				}
+				elseif ($sistetall == "7")
+				{
+					$modvindretning = $vindretning + "3";
+				}
+				elseif ($sistetall == "8")
+				{
+					$modvindretning = $vindretning + "2";
+				}
+				elseif ($sistetall == "9")
+				{
+					$modvindretning = $vindretning + "1";
+				}
+				else
+				{
+					$modvindretning = "x";
+				}
+				// Fyll inn "leading zero's"
+				if ($modvindretning < "10")
+				{
+					$modvindretning = "00$modvindretning";
+				}
+				elseif ($modvindretning < "100")
+				{
+					$modvindretning = "0$modvindretning";
+				}
+				elseif ($modvindretning == "360")
+				{
+					$modvindretning = "000";
+				}
+				else
+				{
+					$modvindretning = $modvindretning;
+				}
+				
+				// Vindstyrkedelen av filnavnet
+				
+				if ($w == "Stille")
+				{
+					$vindstyrke = "";
+					$modvindretning = "vindstille";
+				}
+				elseif ($w == "Flau vind")
+				{
+					$vindstyrke = "vindpil.0000.";
+				}
+				elseif ($w == "Svak vind")
+				{
+					$vindstyrke = "vindpil.0025.";
+				}
+				elseif ($w == "Lett bris")
+				{
+					$vindstyrke = "vindpil.0050.";
+				}
+				elseif ($w == "Laber bris")
+				{
+					$vindstyrke = "vindpil.0075.";
+				}
+				elseif ($w == "Frisk bris")
+				{
+					$vindstyrke = "vindpil.0100.";
+				}
+				elseif ($w == "Liten kuling")
+				{
+					$vindstyrke = "vindpil.0125.";
+				}
+				elseif ($w == "Stiv kuling")
+				{
+					$vindstyrke = "vindpil.0150.";
+				}
+				elseif ($w == "Sterk kuling")
+				{
+					$vindstyrke = "vindpil.0175.";
+				}
+				elseif ($w == "Liten storm")
+				{
+					$vindstyrke = "vindpil.0225.";
+				}
+				elseif ($w == "Full storm")
+				{
+					$vindstyrke = "vindpil.0250.";
+				}
+				elseif ($w == "Sterk storm")
+				{
+					$vindstyrke = "vindpil.0300.";
+				}
+				elseif ($w == "Orkan")
+				{
+					$vindstyrke = "vindpil.0350.";
+				}
+				else
+				{
+					$vindstyrke = ".";
+				}
+				$windpath = "https://www.yr.no/grafikk/sym/vindpiler/32/";
+				// Slutt seksjon for vindpiler.
 
                 $this->ht.=<<<EOT
           <tr>
@@ -655,6 +793,7 @@ EOT
             <td>$rain</td>
             <td class="$tempclass">$temper&deg;</td>
             <td class="v">$w fra $winddirtext</td>
+            <td><img src="$windpath$vindstyrke$modvindretning.png" width="32" height="32" alt="error" /></td>   <!-- // vindpiler inn i tabell  -->
             <td>$r m/s</td>
           </tr>
 
@@ -668,13 +807,13 @@ EOT
     public function getWeatherTableFooter($target='_top'){
         $this->ht.=<<<EOT
           <tr>
-            <td colspan="7" class="skilje"></td>
+            <td colspan="8" class="skilje"></td>
           </tr>
         </tbody>
       </table>
       <p>V&aelig;rsymbolet og nedb&oslash;rsvarselet gjelder for hele perioden, temperatur- og vindvarselet er for det f&oslash;rste tidspunktet. &lt;1 mm betyr at det vil komme mellom 0,1 og 0,9 mm nedb&oslash;r.<br />
-      <a href="http://www.yr.no/1.3362862" target="$target">Slik forst&aring;r du varslene fra yr.no</a>.</p>
-      <p>Vil du ogs&aring; ha <a href="http://www.yr.no/verdata/" target="$target">v&aelig;rvarsel fra yr.no p&aring; dine nettsider</a>?</p>
+      <a href="https://www.yr.no/1.3362862" target="$target">Slik forst&aring;r du varslene fra yr.no</a>.</p>
+      <p>Vil du ogs&aring; ha <a href="https://www.yr.no/verdata/" target="$target">v&aelig;rvarsel fra yr.no p&aring; dine nettsider</a>?</p>
 EOT
         ;
     }
@@ -698,7 +837,11 @@ EOT
     //Main with caching
     public function generateHTMLCached($url,$name,$xml, $try_curl, $useHtmlHeader=true, $useHtmlFooter=true, $useBanner=true, $useText=true, $useLinks=true, $useTable=true, $maxage=0, $timeout=10, $urlTarget='_top'){
         //Default to the name in the url
-        if(null==$name||''==trim($name))$name=array_pop(explode('/',$url));
+        if(!$name)                           // fikset feilmelding 'Notice: Only variables should be passed by reference'
+        {
+           $array =  explode('/',$url);
+           $name = array_pop($array);
+        }
         $this->handleDataDir(false,htmlentities("$name.$useHtmlHeader.$useHtmlFooter.$useBanner.$useText.$useLinks.$useTable.$maxage.$timeout.$urlTarget"));
         $yr_cached = $this->datapath;
         // Clean name
