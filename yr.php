@@ -461,8 +461,8 @@ class YRDisplay{
         // Her kan du endre header til hva du vil. NB! Husk å skru det på, ved å endre instillingene i toppen av dokumentet
         if($use_full_html){
             $this->ht.=<<<EOT
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="https://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>V&aelig;rvarsel fra yr.no</title>
@@ -579,6 +579,7 @@ EOT
             <th>Nedb&oslash;r</th>
             <th>Temp.</th>
             <th class="v">Vind</th>
+            <th></th>                  <!-- // plassholder for tom vindpilheader  -->
             <th>Vindstyrke</th>
           </tr>
         </thead>
@@ -604,7 +605,7 @@ EOT
             if($fromdate!=$thisdate){
                 $divider=<<<EOT
           <tr>
-            <td colspan="7" class="skilje"></td>
+            <td colspan="8" class="skilje"></td>
           </tr>
 
 EOT
@@ -656,6 +657,134 @@ EOT
                 $s=$yr_var3['SYMBOL'][0]['ATTRIBUTES']['NAME'];
                 $w=$yr_var3['WINDSPEED'][0]['ATTRIBUTES']['NAME'];
 
+				// Ny seksjon for vindpiler.
+				// Rund av vindretning til nærmeste null eller fem grader. Retningsdelen av filnavnet.
+				$vindretning = round($yr_var3['WINDDIRECTION'][0]['ATTRIBUTES']['DEG']);
+				$sistetall = substr($vindretning, - 1, 1);
+				if ($sistetall == "0")
+				{
+					$modvindretning = $vindretning;
+				}
+				elseif ($sistetall == "1")
+				{
+					$modvindretning = $vindretning - "1";
+				}
+				elseif ($sistetall == "2")
+				{
+					$modvindretning = $vindretning - "2";
+				}
+				elseif ($sistetall == "3")
+				{
+					$modvindretning = $vindretning + "2";
+				}
+				elseif ($sistetall == "4")
+				{
+					$modvindretning = $vindretning + "1";
+				}
+				elseif ($sistetall == "5")
+				{
+					$modvindretning = $vindretning;
+				}
+				elseif ($sistetall == "6")
+				{
+					$modvindretning = $vindretning - "1";
+				}
+				elseif ($sistetall == "7")
+				{
+					$modvindretning = $vindretning + "3";
+				}
+				elseif ($sistetall == "8")
+				{
+					$modvindretning = $vindretning + "2";
+				}
+				elseif ($sistetall == "9")
+				{
+					$modvindretning = $vindretning + "1";
+				}
+				else
+				{
+					$modvindretning = "x";
+				}
+				// Fyll inn "leading zero's"
+				if ($modvindretning < "10")
+				{
+					$modvindretning = "00$modvindretning";
+				}
+				elseif ($modvindretning < "100")
+				{
+					$modvindretning = "0$modvindretning";
+				}
+				elseif ($modvindretning == "360")
+				{
+					$modvindretning = "000";
+				}
+				else
+				{
+					$modvindretning = $modvindretning;
+				}
+				
+				// Vindstyrkedelen av filnavnet
+				
+				if ($w == "Stille")
+				{
+					$vindstyrke = "";
+					$modvindretning = "vindstille";
+				}
+				elseif ($w == "Flau vind")
+				{
+					$vindstyrke = "vindpil.0000.";
+				}
+				elseif ($w == "Svak vind")
+				{
+					$vindstyrke = "vindpil.0025.";
+				}
+				elseif ($w == "Lett bris")
+				{
+					$vindstyrke = "vindpil.0050.";
+				}
+				elseif ($w == "Laber bris")
+				{
+					$vindstyrke = "vindpil.0075.";
+				}
+				elseif ($w == "Frisk bris")
+				{
+					$vindstyrke = "vindpil.0100.";
+				}
+				elseif ($w == "Liten kuling")
+				{
+					$vindstyrke = "vindpil.0125.";
+				}
+				elseif ($w == "Stiv kuling")
+				{
+					$vindstyrke = "vindpil.0150.";
+				}
+				elseif ($w == "Sterk kuling")
+				{
+					$vindstyrke = "vindpil.0175.";
+				}
+				elseif ($w == "Liten storm")
+				{
+					$vindstyrke = "vindpil.0225.";
+				}
+				elseif ($w == "Full storm")
+				{
+					$vindstyrke = "vindpil.0250.";
+				}
+				elseif ($w == "Sterk storm")
+				{
+					$vindstyrke = "vindpil.0300.";
+				}
+				elseif ($w == "Orkan")
+				{
+					$vindstyrke = "vindpil.0350.";
+				}
+				else
+				{
+					$vindstyrke = ".";
+				}
+				$windpath = "https://www.yr.no/grafikk/sym/vindpiler/32/";
+				// Slutt seksjon for vindpiler.
+
                 $this->ht.=<<<EOT
           <tr>
             <th>$firstcellcont</th>
@@ -664,6 +793,7 @@ EOT
             <td>$rain</td>
             <td class="$tempclass">$temper&deg;</td>
             <td class="v">$w fra $winddirtext</td>
+            <td><img src="$windpath$vindstyrke$modvindretning.png" width="32" height="32" alt="error" /></td>   <!-- // vindpiler inn i tabell  -->
             <td>$r m/s</td>
           </tr>
 
@@ -677,13 +807,13 @@ EOT
     public function getWeatherTableFooter($target='_top'){
         $this->ht.=<<<EOT
           <tr>
-            <td colspan="7" class="skilje"></td>
+            <td colspan="8" class="skilje"></td>
           </tr>
         </tbody>
       </table>
       <p>V&aelig;rsymbolet og nedb&oslash;rsvarselet gjelder for hele perioden, temperatur- og vindvarselet er for det f&oslash;rste tidspunktet. &lt;1 mm betyr at det vil komme mellom 0,1 og 0,9 mm nedb&oslash;r.<br />
-      <a href="http://www.yr.no/1.3362862" target="$target">Slik forst&aring;r du varslene fra yr.no</a>.</p>
-      <p>Vil du ogs&aring; ha <a href="http://www.yr.no/verdata/" target="$target">v&aelig;rvarsel fra yr.no p&aring; dine nettsider</a>?</p>
+      <a href="https://www.yr.no/1.3362862" target="$target">Slik forst&aring;r du varslene fra yr.no</a>.</p>
+      <p>Vil du ogs&aring; ha <a href="https://www.yr.no/verdata/" target="$target">v&aelig;rvarsel fra yr.no p&aring; dine nettsider</a>?</p>
 EOT
         ;
     }
