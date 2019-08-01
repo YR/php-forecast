@@ -698,7 +698,12 @@ EOT
     //Main with caching
     public function generateHTMLCached($url,$name,$xml, $try_curl, $useHtmlHeader=true, $useHtmlFooter=true, $useBanner=true, $useText=true, $useLinks=true, $useTable=true, $maxage=0, $timeout=10, $urlTarget='_top'){
         //Default to the name in the url
-        if(null==$name||''==trim($name))$name=array_pop(explode('/',$url));
+        if(null==$name||''==trim($name))
+        {
+            //$name=array_pop(explode('/',$url));
+            $name=explode('/',$url);
+            $name=array_pop($name);
+        }
         $this->handleDataDir(false,htmlentities("$name.$useHtmlHeader.$useHtmlFooter.$useBanner.$useText.$useLinks.$useTable.$maxage.$timeout.$urlTarget"));
         $yr_cached = $this->datapath;
         // Clean name
